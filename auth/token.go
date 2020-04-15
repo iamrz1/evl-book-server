@@ -12,7 +12,7 @@ const (
 	AuthorizedKey = "authorized"
 	UsernameKey   = "username"
 	ExpirationKey = "exp"
-	AdminKey = "admin"
+	AdminKey      = "admin"
 )
 
 func GenerateJWT(user config.UserCredentials) (string, error) {

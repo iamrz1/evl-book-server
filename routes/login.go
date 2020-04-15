@@ -20,7 +20,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// use db to verify credentials
 	ok, user, err := UserAuthentication(user.Username, user.Password)
 	if err != nil {
-		if err.Error() == db.RedisNilErr{
+		if err.Error() == db.RedisNilErr {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("user doesn't exist"))
 			return
@@ -88,12 +88,12 @@ func getBasicAuthCredentials(r *http.Request) config.UserCredentials {
 func UserAuthentication(username, password string) (bool, config.UserCredentials, error) {
 	userDetails, err := db.GetByteValues(username)
 	if err != nil {
-		return false,config.UserCredentials{}, err
+		return false, config.UserCredentials{}, err
 	}
 
 	user := config.UserCredentials{}
 	if err := json.Unmarshal(userDetails, &user); err != nil {
-		return false,config.UserCredentials{}, err
+		return false, config.UserCredentials{}, err
 	}
-	return GetMD5Hash(password) == user.Password,user ,nil
+	return GetMD5Hash(password) == user.Password, user, nil
 }

@@ -63,10 +63,15 @@ func serve(cmd *cobra.Command, args []string) {
 	api.HandleFunc("/login", routes.LoginHandler)
 	api.HandleFunc("/signup", routes.AddUserHandler)
 	api.HandleFunc("/validate/username/{username}", routes.ValidateUser)
-	n := negroni.New()
-	n.Use(&auth.Auth{})
-	api.Handle("/test", n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
-	api.Handle("/protected", n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	userAuthMW := negroni.New()
+	userAuthMW.Use(&auth.Auth{})
+	api.Handle("/test", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	api.Handle("/protected", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+
+	adminAuthMW := negroni.New()
+	adminAuthMW.Use(&auth.Admin{})
+	adminApi := router.PathPrefix("/api/admin").Subrouter().StrictSlash(true)
+	adminApi.Handle("/test", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
 
 	appCfg := config.App()
 

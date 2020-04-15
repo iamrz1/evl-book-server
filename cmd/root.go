@@ -16,6 +16,7 @@ var (
 // Execute executes the root command of the evl-book-server
 func Execute() {
 	db.InitRedis()
+	db.AddDefaultAdmin()
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err.Error())
 	}
