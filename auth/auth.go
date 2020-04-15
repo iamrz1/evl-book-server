@@ -4,17 +4,9 @@ import (
 	"evl-book-server/config"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/sessions"
-	"log"
 	"net/http"
 	"strings"
 	"time"
-)
-
-var (
-	Store *sessions.CookieStore
-	trueString              = "true"
-	falseString              = "false"
 )
 
 type Auth struct{}
@@ -49,7 +41,6 @@ func (*Auth) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handler
 	fmt.Printf("Execution time: %s \n", time.Now().Sub(t).String())
 }
 
-
 type Admin struct{}
 
 func (*Admin) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -76,10 +67,7 @@ func (*Admin) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handle
 	}
 	claimMap := token.Claims.(jwt.MapClaims)
 
-	log.Println(claimMap[AdminKey])
-	log.Println()
-
-	if claimMap[AdminKey] == false{
+	if claimMap[AdminKey] == false {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("token not valid for administrative work"))
 		return
