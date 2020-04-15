@@ -24,10 +24,11 @@ func (*Auth) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handler
 		w.Write([]byte("Need Bearer authorization! Generate token using your username and password here: http://localhost:<port>/api/login\n"))
 		return
 	}
-	token, err:= jwt.Parse(strings.Split(authHeader, " ")[1], func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(strings.Split(authHeader, " ")[1], func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.App().Key), nil
 	})
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -38,8 +39,8 @@ func (*Auth) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handler
 		return
 	}
 	claimMap := token.Claims.(jwt.MapClaims)
-	for key, value := range claimMap{
-		r.Header.Add(key,fmt.Sprintf("%v",value))
+	for key, value := range claimMap {
+		r.Header.Add(key, fmt.Sprintf("%v", value))
 	}
 	next(w, r)
 	fmt.Printf("Execution time: %s \n", time.Now().Sub(t).String())

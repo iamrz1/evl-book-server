@@ -1,13 +1,13 @@
 package config
+
 type UserCredentials struct {
-	Username	string  `json:"username"`
-	Password	string	`json:"password"`
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	UserData UserData `json:"user_data"`
 }
 
-type User struct {
-	ID			int 	`json:"id"`
-	Name		string  `json:"name"`
-	Username	string  `json:"username"`
-	Password	string	`json:"password"`
+type UserData struct {
+	Name          string `json:"name"`
+	ProfilePicURL string `json:profile_picture_url`
+	IsAdmin       bool   `json:"admin"`
 }
-

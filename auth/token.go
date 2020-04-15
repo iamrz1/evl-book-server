@@ -3,20 +3,21 @@ package auth
 import (
 	"evl-book-server/config"
 	"fmt"
+	jwt "github.com/dgrijalva/jwt-go"
 	logger "github.com/sirupsen/logrus"
 	"time"
-	jwt "github.com/dgrijalva/jwt-go"
 )
 
 const (
 	AuthorizedKey = "authorized"
-	UsernameKey = "username"
+	UsernameKey   = "username"
 	ExpirationKey = "exp"
+	AdminKey = "admin"
 )
 
-func GenerateJWT(username string) (string, error) {
+func GenerateJWT(user config.UserCredentials) (string, error) {
 	appCfg := config.App()
-	if appCfg.Key == ""{
+	if appCfg.Key == "" {
 		logger.Panic("Server needs a key to generate tokens")
 	}
 	var mySigningKey = []byte(appCfg.Key)
@@ -24,9 +25,9 @@ func GenerateJWT(username string) (string, error) {
 
 	claims := token.Claims.(jwt.MapClaims)
 
-
 	claims[AuthorizedKey] = true
-	claims[UsernameKey] = username
+	claims[UsernameKey] = user.Username
+	claims[AdminKey] = user.UserData.IsAdmin
 	claims[ExpirationKey] = time.Now().Add(time.Minute * 30).Unix()
 
 	tokenString, err := token.SignedString(mySigningKey)

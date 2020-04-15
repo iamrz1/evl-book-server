@@ -50,7 +50,6 @@ var serveCmd = &cobra.Command{
 	},
 }
 
-
 // serves the server
 func serve(cmd *cobra.Command, args []string) {
 	if !db.IsRedisUp() {
@@ -61,11 +60,13 @@ func serve(cmd *cobra.Command, args []string) {
 
 	router.Methods("GET").Path("/").HandlerFunc(routes.HomePageHandler)
 	api := router.PathPrefix("/api").Subrouter().StrictSlash(true)
-	api.HandleFunc("/login",routes.LoginHandler)
+	api.HandleFunc("/login", routes.LoginHandler)
+	api.HandleFunc("/signup", routes.AddUserHandler)
+	api.HandleFunc("/validate/username/{username}", routes.ValidateUser)
 	n := negroni.New()
 	n.Use(&auth.Auth{})
-	api.Handle("/test",n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
-	api.Handle("/protected",n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	api.Handle("/test", n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	api.Handle("/protected", n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
 
 	appCfg := config.App()
 

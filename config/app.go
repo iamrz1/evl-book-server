@@ -15,7 +15,7 @@ type Application struct {
 	Version      string
 	Debug        bool
 	Env          string
-	Key string
+	Key          string
 }
 
 var appCfg Application

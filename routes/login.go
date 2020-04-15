@@ -5,35 +5,41 @@ import (
 	"encoding/json"
 	"evl-book-server/auth"
 	"evl-book-server/config"
+	"evl-book-server/db"
 	"net/http"
 	"strings"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	user := getCredentials(r)
-	if user.Username == "" || user.Password == ""{
-		w.WriteHeader(http.StatusForbidden)
+	user := getBasicAuthCredentials(r)
+	if user.Username == "" || user.Password == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	//validate user credentials
-	if strings.ToLower(user.Username) != "rezoan" {
-		if user.Password != "abc123" {
-			w.WriteHeader(http.StatusForbidden)
+	// use db to verify credentials
+	ok, user, err := UserAuthentication(user.Username, user.Password)
+	if err != nil {
+		if err.Error() == db.RedisNilErr{
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("user doesn't exist"))
 			return
 		}
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	// TODO: use isAuthenticated() to validate user credentials
-
-	if !isAuthenticated(user.Username,user.Password){
+	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	//Generate token
-	token, err := auth.GenerateJWT(user.Username)
+	token, err := auth.GenerateJWT(user)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -43,8 +49,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func JsonResponse(response interface{}, w http.ResponseWriter) {
-	json, err :=  json.Marshal(response)
+	json, err := json.Marshal(response)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -54,7 +61,7 @@ func JsonResponse(response interface{}, w http.ResponseWriter) {
 	w.Write(json)
 }
 
-func getCredentials(r *http.Request) config.UserCredentials {
+func getBasicAuthCredentials(r *http.Request) config.UserCredentials {
 	//Authorization in Header has the encoder-base and user-credentials encrypted in it
 	encryptedAuthArr := strings.Split(r.Header.Get("Authorization"), " ")
 	if len(encryptedAuthArr) != 2 {
@@ -69,7 +76,7 @@ func getCredentials(r *http.Request) config.UserCredentials {
 	}
 	credential := string(byteCredStr)
 	//log.Println("credential = ", credential)
-	credSplitArray := strings.SplitN(credential,":",2)
+	credSplitArray := strings.SplitN(credential, ":", 2)
 	// check with database
 
 	return config.UserCredentials{
@@ -78,9 +85,15 @@ func getCredentials(r *http.Request) config.UserCredentials {
 	}
 }
 
-func isAuthenticated(username, password string) bool {
-	authenticated := true
-	// TODO: validate against record in db
+func UserAuthentication(username, password string) (bool, config.UserCredentials, error) {
+	userDetails, err := db.GetByteValues(username)
+	if err != nil {
+		return false,config.UserCredentials{}, err
+	}
 
-	return authenticated
+	user := config.UserCredentials{}
+	if err := json.Unmarshal(userDetails, &user); err != nil {
+		return false,config.UserCredentials{}, err
+	}
+	return GetMD5Hash(password) == user.Password,user ,nil
 }
