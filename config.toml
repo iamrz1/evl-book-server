@@ -8,6 +8,7 @@ idle_timeout = 30 #seconds
 version = "alpha-0.0.1"
 debug = true
 env = "development"
+key = "rezoanssuperdupersecretkey"
 
 [basic_auth_secrets]
 admin = "secret()" # username = password

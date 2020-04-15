@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"evl-book-server/auth"
 	"evl-book-server/db"
 	"evl-book-server/routes"
 	"fmt"
@@ -18,7 +19,18 @@ import (
 	"github.com/gorilla/mux"
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/urfave/negroni"
 )
+
+func init() {
+	serveCmd.PersistentFlags().IntP("port", "p", config.App().Port, "port on which the server will listen for http")
+
+	err := viper.BindPFlag("app.port", serveCmd.PersistentFlags().Lookup("port"))
+	if err != nil {
+		logger.Panicln("error binding flag", err)
+	}
+	rootCmd.AddCommand(serveCmd)
+}
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
@@ -38,15 +50,6 @@ var serveCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	serveCmd.PersistentFlags().IntP("port", "p", config.App().Port, "port on which the server will listen for http")
-
-	err := viper.BindPFlag("app.port", serveCmd.PersistentFlags().Lookup("port"))
-	if err != nil {
-		logger.Panicln("error binding flag", err)
-	}
-	rootCmd.AddCommand(serveCmd)
-}
 
 // serves the server
 func serve(cmd *cobra.Command, args []string) {
@@ -56,7 +59,13 @@ func serve(cmd *cobra.Command, args []string) {
 
 	var router = mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/", routes.HomePageHandler)
+	router.Methods("GET").Path("/").HandlerFunc(routes.HomePageHandler)
+	api := router.PathPrefix("/api").Subrouter().StrictSlash(true)
+	api.HandleFunc("/login",routes.LoginHandler)
+	n := negroni.New()
+	n.Use(&auth.Auth{})
+	api.Handle("/test",n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	api.Handle("/protected",n.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
 
 	appCfg := config.App()
 

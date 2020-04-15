@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"evl-book-server/auth"
 	"evl-book-server/db"
 	"github.com/spf13/cobra"
 	"log"
@@ -16,7 +15,6 @@ var (
 
 // Execute executes the root command of the evl-book-server
 func Execute() {
-	auth.InitCookieStore()
 	db.InitRedis()
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err.Error())
