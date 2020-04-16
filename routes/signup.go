@@ -26,7 +26,7 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		w.Header().Set(ValidUserName, FalseString)
 		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("invalid username"))
+		_, _ =  w.Write([]byte("invalid username"))
 		return
 	}
 
@@ -43,8 +43,8 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db.SetJsonValues(UserPrefix+user.Username, userBytes)
-	w.Write([]byte("signed up successfully"))
+	_ = db.SetJsonValues(UserPrefix+user.Username, userBytes)
+	_, _ =  w.Write([]byte("signed up successfully"))
 }
 
 func getJsonCredentials(r *http.Request) config.UserCredentials {

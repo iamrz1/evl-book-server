@@ -15,6 +15,7 @@ const (
 	AuthorPrefix = "author_"
 	BookPrefix   = "book_"
 	UserPrefix   = "user_"
+	LoanPrefix   = "loan_"
 )
 
 func BookCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +26,11 @@ func BookCreateHandler(w http.ResponseWriter, r *http.Request) {
 	validBook, err := ValidateBookCreate(book)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		if err.Error()==db.RedisNilErr {
+			http.Error(w, "author doesn't exist", http.StatusBadRequest)
+		} else {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
 		return
 	}
 	bookKey := BookPrefix + strconv.Itoa(book.ID)
@@ -40,7 +45,7 @@ func BookCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("book added successfully"))
+	_, _ =  w.Write([]byte("book added successfully"))
 }
 
 func BookUpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +71,7 @@ func BookUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("book added successfully"))
+	_, _ =  w.Write([]byte("book added successfully"))
 }
 
 func BookDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +86,7 @@ func BookDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("book deleted successfully"))
+	_, _ =  w.Write([]byte("book deleted successfully"))
 }
 
 func GetBookHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,10 +105,10 @@ func GetBookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(book)
+	_, _ =  w.Write(book)
 }
 
-func GetAllBooksHandler(w http.ResponseWriter, r *http.Request) {
+func GetAllBooksHandler(w http.ResponseWriter, _ *http.Request) {
 
 	bookKeys, err := db.ScanKeysByPrefix(BookPrefix)
 	if err != nil {
@@ -111,7 +116,7 @@ func GetAllBooksHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(bookKeys) == 0 {
-		w.Write([]byte("no book has been added yet"))
+		_, _ =  w.Write([]byte("no book has been added yet"))
 		return
 	}
 	resultString := "["
@@ -127,7 +132,7 @@ func GetAllBooksHandler(w http.ResponseWriter, r *http.Request) {
 		resultString += book
 	}
 	resultString += "]"
-	w.Write([]byte(resultString))
+	_, _ =  w.Write([]byte(resultString))
 }
 
 func getBookDetails(r *http.Request) config.Book {
@@ -146,9 +151,12 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 	}
 	log.Println("book author id=", book.AuthorID)
 	if book.AuthorID != 0 {
-		// look for the author id, if author exists, ad this book to his collection
-		// else return nil
-		log.Println("yet to implement author")
+		authorKey := AuthorPrefix+strconv.Itoa(book.AuthorID)
+		author, err := getAuthorByKeyFromDB(authorKey)
+		if err != nil {
+			return config.Book{}, err
+		}
+		author.AuthoredBookIDs = append(author.AuthoredBookIDs, book.ID)
 	}
 
 	bookKey := BookPrefix + strconv.Itoa(book.ID)
@@ -158,10 +166,12 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 	}
 	if !ok {
 		// book is new
-		book.TotalCount = book.AddToCount
-		book.AddToCount = 0
+		book.TotalCount = book.AddCount
+		if book.TotalCount == 0 {
+			book.TotalCount = 1
+		}
+		book.AddCount = 0
 		book.OnLoanCount = 0
-		// TODO: add book to author, if author doesn't exist, create one
 		return book, nil
 	}
 	// book is old
@@ -170,12 +180,14 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 
 func isBookExistInDB(key string) (bool, error) {
 	_, err := db.GetSingleValue(key)
-	if err != nil && err.Error() != db.RedisNilErr {
-		return false, err
-	} else if err.Error() == db.RedisNilErr {
-		//book doesnt already exist
-		return false, nil
-	}
+	if err != nil {
+		if err.Error() != db.RedisNilErr {
+			return false, err
+		} else {
+			//book doesnt already exist
+			return false, nil
+		}
+	} 
 	// book exists
 	return true, nil
 }
@@ -209,15 +221,55 @@ func ValidateBookUpdate(book config.Book) (config.Book, error) {
 		log.Println("yet to implement author")
 	}
 	if savedBook.AuthorID != book.AuthorID {
-		//TODO: look if the new author exists, if not refuse the update
-		//TODO: if new author exists, add this book to his collection and remove from old authors collection
+		if book.AuthorID != 0 {
+			authorKey := AuthorPrefix+strconv.Itoa(book.AuthorID)
+			author, err := getAuthorByKeyFromDB(authorKey)
+			if err != nil {
+				return config.Book{}, err
+			}
+			author.AuthoredBookIDs = append(author.AuthoredBookIDs, book.ID)
+			authorByte, err := json.Marshal(author)
+			if err != nil {
+				return config.Book{}, err
+			}
+			_ = db.SetJsonValues(authorKey,authorByte)
+		}
+		if savedBook.AuthorID!= 0 {
+			authorKey := AuthorPrefix+strconv.Itoa(savedBook.AuthorID)
+			author, err := getAuthorByKeyFromDB(authorKey)
+			// we dont have to block update for any error here
+			if err == nil {
+				author.AuthoredBookIDs = append(author.AuthoredBookIDs, book.ID)
+				author.AuthoredBookIDs = RemoveElementFromArray(author.AuthoredBookIDs, savedBook.AuthorID)
+				authorByte, err := json.Marshal(author)
+				if err != nil {
+					return config.Book{}, err
+				}
+				_ = db.SetJsonValues(authorKey,authorByte)
+			}
+
+		}
 	}
 
 	book.TotalCount = savedBook.TotalCount
 	book.OnLoanCount = savedBook.OnLoanCount
-	if book.AddToCount > 0 {
-		book.TotalCount += book.AddToCount
+	if book.AddCount > 0 {
+		book.TotalCount += book.AddCount
 	}
 
 	return book, nil
+}
+
+func getAuthorByKeyFromDB(authorKey string) (config.Author, error) {
+	authorByte, err := db.GetByteValues(authorKey)
+	if err != nil {
+		return config.Author{}, err
+	}
+	author := config.Author{}
+
+	if err := json.Unmarshal(authorByte, &author); err != nil {
+		return config.Author{}, err
+	}
+
+	return author, nil
 }

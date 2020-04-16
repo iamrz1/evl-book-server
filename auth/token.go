@@ -3,8 +3,8 @@ package auth
 import (
 	"evl-book-server/config"
 	"fmt"
-	jwt "github.com/dgrijalva/jwt-go"
-	logger "github.com/sirupsen/logrus"
+	"github.com/dgrijalva/jwt-go"
+	"log"
 	"time"
 )
 
@@ -18,7 +18,7 @@ const (
 func GenerateJWT(user config.UserCredentials) (string, error) {
 	appCfg := config.App()
 	if appCfg.Key == "" {
-		logger.Panic("Server needs a key to generate tokens")
+		log.Panicln("Server needs a key to generate tokens")
 	}
 	var mySigningKey = []byte(appCfg.Key)
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -33,7 +33,7 @@ func GenerateJWT(user config.UserCredentials) (string, error) {
 	tokenString, err := token.SignedString(mySigningKey)
 
 	if err != nil {
-		fmt.Errorf("something went wrong: %s", err.Error())
+		_ = fmt.Errorf("something went wrong: %s", err.Error())
 		return "", err
 	}
 

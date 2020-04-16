@@ -21,6 +21,7 @@ func AuthorCreateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	// save author to db
 	authorKey := AuthorPrefix + strconv.Itoa(author.ID)
 	authorBytes, err := json.Marshal(validAuthor)
 	if err != nil {
@@ -33,7 +34,7 @@ func AuthorCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("author added successfully"))
+	_, _ =  w.Write([]byte("author added successfully"))
 }
 
 func AuthorUpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +60,7 @@ func AuthorUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("author added successfully"))
+	_, _ =  w.Write([]byte("author added successfully"))
 }
 
 func AuthorDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +75,7 @@ func AuthorDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("author deleted successfully"))
+	_, _ =  w.Write([]byte("author deleted successfully"))
 }
 
 func GetAuthorHandler(w http.ResponseWriter, r *http.Request) {
@@ -93,18 +94,18 @@ func GetAuthorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(author)
+	_, _ =  w.Write(author)
 }
 
-func GetAllAuthorsHandler(w http.ResponseWriter, r *http.Request) {
-
+func GetAllAuthorsHandler(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "application/jsonResponse")
 	authorKeys, err := db.ScanKeysByPrefix(AuthorPrefix)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if len(authorKeys) == 0 {
-		w.Write([]byte("no author has been added yet"))
+		_, _ =  w.Write([]byte("no author has been added yet"))
 		return
 	}
 	resultString := "["
@@ -120,7 +121,7 @@ func GetAllAuthorsHandler(w http.ResponseWriter, r *http.Request) {
 		resultString += author
 	}
 	resultString += "]"
-	w.Write([]byte(resultString))
+	_, _ =  w.Write([]byte(resultString))
 }
 
 func getAuthorDetails(r *http.Request) config.Author {
@@ -144,18 +145,18 @@ func ValidateAuthorCreate(author config.Author) (config.Author, error) {
 		return config.Author{}, err
 	}
 	if !ok {
-		// TODO: add author to author, if author doesn't exist, create one
 		return author, nil
 	}
-	// author is old
-	return author, errors.New("author already exists")
+	// author already exists
+	return config.Author{}, errors.New("author already exists")
 }
 
 func isAuthorExistInDB(key string) (bool, error) {
 	_, err := db.GetSingleValue(key)
 	if err != nil && err.Error() != db.RedisNilErr {
 		return false, err
-	} else if err.Error() == db.RedisNilErr {
+	}
+	if err != nil && err.Error() == db.RedisNilErr {
 		//author doesnt already exist
 		return false, nil
 	}

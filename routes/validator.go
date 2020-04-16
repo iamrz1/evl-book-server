@@ -30,7 +30,7 @@ func ValidateUser(w http.ResponseWriter, r *http.Request) {
 		if username == word {
 			w.Header().Set(ValidUserName, FalseString)
 			w.Header().Set(ErrorLogKey, "username "+username+" is a reserved word")
-			w.Write([]byte(fmt.Sprintln(FalseString)))
+			_, _ =  w.Write([]byte(fmt.Sprintln(FalseString)))
 			return
 		}
 	}
@@ -38,7 +38,7 @@ func ValidateUser(w http.ResponseWriter, r *http.Request) {
 	if match, _ := regexp.MatchString("^([a-z])+([a-z0-9])*$", username); !match {
 		w.Header().Set(ValidUserName, FalseString)
 		w.Header().Set(ErrorLogKey, UnsupportedCharacterErr)
-		w.Write([]byte(fmt.Sprintln(FalseString)))
+		_, _ =  w.Write([]byte(fmt.Sprintln(FalseString)))
 		return
 	}
 
@@ -46,15 +46,15 @@ func ValidateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == db.RedisNilErr {
 			w.Header().Set(ValidUserName, TrueString)
-			w.Write([]byte(TrueString))
+			_, _ =  w.Write([]byte(TrueString))
 			return
 		}
 		w.Header().Set(ValidUserName, FalseString)
 		w.Header().Set(ErrorLogKey, "db err "+err.Error())
-		w.Write([]byte(FalseString))
+		_, _ =  w.Write([]byte(FalseString))
 		return
 	}
 
 	w.Header().Set(ValidUserName, FalseString)
-	w.Write([]byte(FalseString))
+	_, _ =  w.Write([]byte(FalseString))
 }
