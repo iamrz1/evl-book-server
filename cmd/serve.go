@@ -51,7 +51,7 @@ var serveCmd = &cobra.Command{
 }
 
 // serves the server
-func serve(cmd *cobra.Command, args []string) {
+func serve(_ *cobra.Command, _ []string) {
 	if !db.IsRedisUp() {
 		logger.Println("redis server is down")
 	}
@@ -73,6 +73,12 @@ func serve(cmd *cobra.Command, args []string) {
 	api.Handle("/authors", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllAuthorsHandler))))
 	api.Handle("/author/{id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAuthorHandler))))
 
+	api.Handle("/loan/request/{book_id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.CreateLoanRequestHandler))))
+	api.Handle("/loans", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllLoansForThisUserHandler))))
+	api.Handle("/loan/{id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetLoanByIDForThisUserHandler))))
+	api.Handle("/loans/pending", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllPendingLoansForThisUserHandler))))
+	api.Handle("/loans/active", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllActiveLoansForThisUserHandler))))
+
 	adminAuthMW := negroni.New()
 	adminAuthMW.Use(&auth.Admin{})
 	adminApi := router.PathPrefix("/api/admin").Subrouter().StrictSlash(true)
@@ -80,9 +86,18 @@ func serve(cmd *cobra.Command, args []string) {
 	adminApi.Handle("/book/create", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookCreateHandler))))
 	adminApi.Handle("/book/update", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookUpdateHandler))))
 	adminApi.Handle("/book/delete/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookDeleteHandler))))
+
 	adminApi.Handle("/author/create", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.AuthorCreateHandler))))
 	adminApi.Handle("/author/update", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.AuthorUpdateHandler))))
 	adminApi.Handle("/author/delete/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.AuthorDeleteHandler))))
+
+	adminApi.Handle("/loans", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllLoansHandler))))
+	adminApi.Handle("/loan/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetLoanByIDHandler))))
+	adminApi.Handle("/loans/pending", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllPendingLoansHandler))))
+	adminApi.Handle("/loans/active", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllActiveLoansHandler))))
+	adminApi.Handle("/loans/approve/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.ApproveLoanRequestHandler))))
+	adminApi.Handle("/loans/decline/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.DeclineLoanRequestHandler))))
+	adminApi.Handle("/loans/returned/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.ReturnedBookHandler))))
 
 	appCfg := config.App()
 

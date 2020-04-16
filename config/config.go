@@ -16,5 +16,4 @@ func init() {
 	}
 
 	LoadApp()
-
 }

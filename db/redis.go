@@ -96,8 +96,8 @@ func ScanKeysByPrefix(key string) ([]string, error) {
 	return result, nil
 }
 
-func RemoveByKey(keys string) error {
-	_, err := redisClient.Del(keys).Result()
+func RemoveByKey(key string) error {
+	_, err := redisClient.Del(key).Result()
 	return err
 }
 

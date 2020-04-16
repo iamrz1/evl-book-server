@@ -22,7 +22,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == db.RedisNilErr {
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("user doesn't exist"))
+			_, _ =  w.Write([]byte("user doesn't exist"))
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -49,7 +49,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func JsonResponse(response interface{}, w http.ResponseWriter) {
-	json, err := json.Marshal(response)
+	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -57,8 +57,8 @@ func JsonResponse(response interface{}, w http.ResponseWriter) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	w.Header().Set("Content-Type", "application/jsonResponse")
+	_, _ = w.Write(jsonResponse)
 }
 
 func getBasicAuthCredentials(r *http.Request) config.UserCredentials {
