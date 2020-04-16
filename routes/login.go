@@ -86,7 +86,7 @@ func getBasicAuthCredentials(r *http.Request) config.UserCredentials {
 }
 
 func UserAuthentication(username, password string) (bool, config.UserCredentials, error) {
-	userDetails, err := db.GetByteValues(username)
+	userDetails, err := db.GetByteValues(UserPrefix + username)
 	if err != nil {
 		return false, config.UserCredentials{}, err
 	}
