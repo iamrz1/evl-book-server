@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	ReservedWords = []string{"http", "https", "www", "ftp", "admin", ".com", ".io", ".net", "login"}
+	ReservedWords = []string{"http", "https", "www", "ftp", "admin", ".com", ".io", ".net", "login", "book_", "author_", "loan_", "user_"}
 )
 
 func ValidateUser(w http.ResponseWriter, r *http.Request) {

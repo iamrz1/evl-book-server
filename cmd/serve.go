@@ -63,15 +63,26 @@ func serve(cmd *cobra.Command, args []string) {
 	api.HandleFunc("/login", routes.LoginHandler)
 	api.HandleFunc("/signup", routes.AddUserHandler)
 	api.HandleFunc("/validate/username/{username}", routes.ValidateUser)
+
 	userAuthMW := negroni.New()
 	userAuthMW.Use(&auth.Auth{})
 	api.Handle("/test", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
 	api.Handle("/protected", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	api.Handle("/books", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllBooksHandler))))
+	api.Handle("/book/{id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetBookHandler))))
+	api.Handle("/authors", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllAuthorsHandler))))
+	api.Handle("/author/{id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAuthorHandler))))
 
 	adminAuthMW := negroni.New()
 	adminAuthMW.Use(&auth.Admin{})
 	adminApi := router.PathPrefix("/api/admin").Subrouter().StrictSlash(true)
 	adminApi.Handle("/test", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	adminApi.Handle("/book/create", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookCreateHandler))))
+	adminApi.Handle("/book/update", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookUpdateHandler))))
+	adminApi.Handle("/book/delete/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookDeleteHandler))))
+	adminApi.Handle("/author/create", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.AuthorCreateHandler))))
+	adminApi.Handle("/author/update", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.AuthorUpdateHandler))))
+	adminApi.Handle("/author/delete/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.AuthorDeleteHandler))))
 
 	appCfg := config.App()
 

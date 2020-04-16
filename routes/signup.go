@@ -43,7 +43,7 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db.SetJsonValues(user.Username, userBytes)
+	db.SetJsonValues(UserPrefix+user.Username, userBytes)
 	w.Write([]byte("signed up successfully"))
 }
 
@@ -51,11 +51,11 @@ func getJsonCredentials(r *http.Request) config.UserCredentials {
 	cred := config.UserCredentials{}
 	err := json.NewDecoder(r.Body).Decode(&cred)
 	if err != nil {
-		// If there is something wrong with the request body, return a 400 status
+		// If there is something wrong with the request body, return a  nil structure
 		return config.UserCredentials{}
 	}
-	// check with database
 	cred.Password = GetMD5Hash(cred.Password)
+
 	return cred
 }
 

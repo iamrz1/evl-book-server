@@ -27,10 +27,10 @@ func AddDefaultAdmin() {
 		log.Println("error encoding admin data")
 		return
 	}
-	_, err = GetSingleValue(user.Username)
+	_, err = GetSingleValue("user_" + user.Username)
 	if err != nil {
 		if err.Error() == RedisNilErr {
-			SetJsonValues(user.Username, userBytes)
+			SetJsonValues("user_"+user.Username, userBytes)
 		} else {
 			log.Println("error getting admin data")
 		}

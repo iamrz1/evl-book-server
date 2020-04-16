@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
 	"log"
@@ -72,8 +73,32 @@ func GetSingleValue(key string) (string, error) {
 func ReplaceKey(key string, newKey string) error {
 	return redisClient.Rename(key, newKey).Err()
 }
+
 func GetClient() *RedisClient {
 	return &redisClient
+}
+
+func ScanKeysByPrefix(key string) ([]string, error) {
+	var result []string
+	var cursor uint64
+	for {
+		var keys []string
+		var err error
+		keys, cursor, err = redisClient.Scan(cursor, fmt.Sprintf("%s*", key), 10).Result()
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, keys...)
+		if cursor == 0 {
+			break
+		}
+	}
+	return result, nil
+}
+
+func RemoveByKey(keys string) error {
+	_, err := redisClient.Del(keys).Result()
+	return err
 }
 
 func CloseRedis() {
