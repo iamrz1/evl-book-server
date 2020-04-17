@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+// LoginHandler lets user login using basic auth
+// credentials used during the signup process. It
+// returns a token upon successful login, that can
+// be used to access user specific contents
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	user := getBasicAuthCredentials(r)
 	if user.Username == "" || user.Password == "" {

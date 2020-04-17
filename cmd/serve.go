@@ -57,17 +57,18 @@ func serve(_ *cobra.Command, _ []string) {
 	}
 
 	var router = mux.NewRouter().StrictSlash(true)
-
 	router.Methods("GET").Path("/").HandlerFunc(routes.HomePageHandler)
+
 	api := router.PathPrefix("/api").Subrouter().StrictSlash(true)
 	api.HandleFunc("/login", routes.LoginHandler)
 	api.HandleFunc("/signup", routes.AddUserHandler)
 	api.HandleFunc("/validate/username/{username}", routes.ValidateUser)
-	api.HandleFunc("/finalize-upload", routes.ImageUploadHandler)
 
+	// api endpoints that goes through user auth middleware.
+	// the user auth middleware uses token to authorize requests
 	userAuthMW := negroni.New()
 	userAuthMW.Use(&auth.Auth{})
-	api.Handle("/protected", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
+	api.Handle("/update-profile", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.UpdateInfoHandler))))
 	api.Handle("/books", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllBooksHandler))))
 	api.Handle("/book/{id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetBookHandler))))
 	api.Handle("/authors", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllAuthorsHandler))))
@@ -82,10 +83,11 @@ func serve(_ *cobra.Command, _ []string) {
 	api.Handle("/loans/pending", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllPendingLoansForThisUserHandler))))
 	api.Handle("/loans/active", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllActiveLoansForThisUserHandler))))
 
+	// api endpoints that goes through admin auth middleware.
+	// admin auth middleware uses token to authorize requests
 	adminAuthMW := negroni.New()
 	adminAuthMW.Use(&auth.Admin{})
 	adminApi := router.PathPrefix("/api/admin").Subrouter().StrictSlash(true)
-	adminApi.Handle("/test", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.HomePageHandler))))
 	adminApi.Handle("/book/create", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookCreateHandler))))
 	adminApi.Handle("/book/update", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookUpdateHandler))))
 	adminApi.Handle("/book/delete/{id}", adminAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.BookDeleteHandler))))
