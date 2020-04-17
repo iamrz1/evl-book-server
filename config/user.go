@@ -2,15 +2,15 @@ package config
 
 type UserCredentials struct {
 	Username    string   `json:"username"`
+	Name        string   `json:"name"`
 	Password    string   `json:"password"`
 	UserData    UserData `json:"user_data"`
 	LoanIDArray []int
 }
 
 type UserData struct {
-	Name          string `json:"name"`
-	ProfilePicURL string `json:"profile_picture_url"`
-	IsAdmin       bool   `json:"admin"`
+	ProfilePicURL string
+	IsAdmin       bool
 }
 
 type UserLoanData struct {

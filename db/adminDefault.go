@@ -15,7 +15,6 @@ func AddDefaultAdmin() {
 		Password: GetMD5Hash("admin"),
 		UserData: config.UserData{
 			IsAdmin:       true,
-			Name:          "",
 			ProfilePicURL: "",
 		},
 	}

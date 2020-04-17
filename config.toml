@@ -9,6 +9,7 @@ version = "alpha-0.0.1"
 debug = true
 env = "development"
 key = "rezoanssuperdupersecretkey"
+scheme = "http"
 
 [basic_auth_secrets]
 admin = "secret()" # username = password
