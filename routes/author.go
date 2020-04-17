@@ -34,7 +34,7 @@ func AuthorCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ =  w.Write([]byte("author added successfully"))
+	_, _ = w.Write([]byte("author added successfully"))
 }
 
 func AuthorUpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +60,7 @@ func AuthorUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ =  w.Write([]byte("author added successfully"))
+	_, _ = w.Write([]byte("author added successfully"))
 }
 
 func AuthorDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +75,7 @@ func AuthorDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ =  w.Write([]byte("author deleted successfully"))
+	_, _ = w.Write([]byte("author deleted successfully"))
 }
 
 func GetAuthorHandler(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +94,7 @@ func GetAuthorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ =  w.Write(author)
+	_, _ = w.Write(author)
 }
 
 func GetAllAuthorsHandler(w http.ResponseWriter, _ *http.Request) {
@@ -105,7 +105,7 @@ func GetAllAuthorsHandler(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	if len(authorKeys) == 0 {
-		_, _ =  w.Write([]byte("no author has been added yet"))
+		_, _ = w.Write([]byte("no author has been added yet"))
 		return
 	}
 	resultString := "["
@@ -121,7 +121,7 @@ func GetAllAuthorsHandler(w http.ResponseWriter, _ *http.Request) {
 		resultString += author
 	}
 	resultString += "]"
-	_, _ =  w.Write([]byte(resultString))
+	_, _ = w.Write([]byte(resultString))
 }
 
 func getAuthorDetails(r *http.Request) config.Author {

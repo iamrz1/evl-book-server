@@ -22,7 +22,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == db.RedisNilErr {
 			w.WriteHeader(http.StatusUnauthorized)
-			_, _ =  w.Write([]byte("user doesn't exist"))
+			_, _ = w.Write([]byte("user doesn't exist"))
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -56,7 +56,7 @@ func JsonResponse(response interface{}, w http.ResponseWriter) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	//w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/jsonResponse")
 	_, _ = w.Write(jsonResponse)
 }

@@ -16,6 +16,7 @@ type Application struct {
 	Debug        bool
 	Env          string
 	Key          string
+	Scheme       string
 }
 
 var appCfg Application
@@ -31,6 +32,7 @@ func LoadApp() {
 		Debug:        viper.GetBool("app.debug"),
 		Env:          viper.GetString("app.env"),
 		Key:          viper.GetString("app.key"),
+		Scheme:       viper.GetString("app.scheme"),
 	}
 }
 

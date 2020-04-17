@@ -18,7 +18,7 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ok, err := ValidateUsername(user.Username)
+	ok, err := ValidateUsername(r, user.Username)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -26,7 +26,7 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		w.Header().Set(ValidUserName, FalseString)
 		w.WriteHeader(http.StatusForbidden)
-		_, _ =  w.Write([]byte("invalid username"))
+		_, _ = w.Write([]byte("invalid username"))
 		return
 	}
 
@@ -34,7 +34,6 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	// process and save them in db
 	user.UserData = config.UserData{
 		IsAdmin:       false,
-		Name:          "",
 		ProfilePicURL: "",
 	}
 	userBytes, err := json.Marshal(user)
@@ -44,7 +43,7 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = db.SetJsonValues(UserPrefix+user.Username, userBytes)
-	_, _ =  w.Write([]byte("signed up successfully"))
+	_, _ = w.Write([]byte("signed up successfully"))
 }
 
 func getJsonCredentials(r *http.Request) config.UserCredentials {
@@ -64,8 +63,8 @@ func GetMD5Hash(text string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func ValidateUsername(username string) (bool, error) {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/api/validate/username/%s", config.App().Port, username))
+func ValidateUsername(r *http.Request, username string) (bool, error) {
+	resp, err := http.Get(fmt.Sprintf("%s://%s/api/validate/username/%s", config.App().Scheme, r.Host, username))
 	if err != nil {
 		return false, err
 	}
