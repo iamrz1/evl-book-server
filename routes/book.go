@@ -18,6 +18,7 @@ const (
 	LoanPrefix   = "loan_"
 )
 
+// BookCreateHandler creates a new book using the given JSON
 func BookCreateHandler(w http.ResponseWriter, r *http.Request) {
 	// assuming that we will receive json as signup form
 	book := getBookDetails(r)
@@ -48,6 +49,7 @@ func BookCreateHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("book added successfully"))
 }
 
+// BookUpdateHandler updates a book's info using the given JSON
 func BookUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// assuming that we will receive json as signup form
 	book := getBookDetails(r)
@@ -74,6 +76,7 @@ func BookUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("book added successfully"))
 }
 
+// BookDeleteHandler deletes a book by the given ID
 func BookDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bookID := vars["id"]
@@ -89,6 +92,7 @@ func BookDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("book deleted successfully"))
 }
 
+// GetBookHandler returns a book's info by bookID
 func GetBookHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bookID := vars["id"]
@@ -108,6 +112,7 @@ func GetBookHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(book)
 }
 
+// GetAllBooksHandler returns an array of all books' info
 func GetAllBooksHandler(w http.ResponseWriter, _ *http.Request) {
 
 	bookKeys, err := db.ScanKeysByPrefix(BookPrefix)

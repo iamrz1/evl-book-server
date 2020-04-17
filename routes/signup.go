@@ -86,7 +86,7 @@ func UpdateInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// assuming that we will receive json as signup form
 	username := r.Header.Get(auth.UsernameKey)
 	user := getJsonCredentials(r)
-	if user.Username != "" && user.Username != username{
+	if user.Username != "" && user.Username != username {
 		_, _ = w.Write([]byte("changing username is not allowed"))
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -99,14 +99,14 @@ func UpdateInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Name == ""{
+	if user.Name == "" {
 		user.Name = savedUser.Name
 	}
-	if user.Password == GetMD5Hash(""){
+	if user.Password == GetMD5Hash("") {
 		user.Password = savedUser.Password
 	}
 
-	if savedUser.Name == user.Name && savedUser.Password == user.Password{
+	if savedUser.Name == user.Name && savedUser.Password == user.Password {
 		_, _ = w.Write([]byte("no changes were made"))
 		return
 	}

@@ -10,6 +10,9 @@ import (
 	"net/http"
 )
 
+// ImageUploadHandler handles image uploading from local
+// machine using /upload/finalize endpoint. This is more of
+// a helper endpoint, and won't work on a remote host.
 func ImageUploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("uploading image")
 	authHeader := r.Header.Get("Authorization")
