@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+// CreateLoanRequestHandler lets a logged in user to
+// request for a book using that books ID.
 func CreateLoanRequestHandler(w http.ResponseWriter, r *http.Request) {
 	loan := getLoanDetails(r)
 	// check for inconsistencies
@@ -63,20 +65,8 @@ func addLoanIDToUsersLoanIDArray(username string, loanID int) error {
 	return nil
 }
 
-func getUserByKey(userKey string) (config.UserCredentials, error) {
-	userBytes, err := db.GetByteValues(strings.ToLower(userKey))
-	if err != nil {
-		log.Println("could not find user by key")
-		return config.UserCredentials{}, err
-	}
-	user := config.UserCredentials{}
-	if err := json.Unmarshal(userBytes, &user); err != nil {
-		log.Println("could not find user by key")
-		return config.UserCredentials{}, err
-	}
-	return user, nil
-}
-
+// ApproveLoanRequestHandler is used by the admin to
+// approve a loan request by loan ID
 func ApproveLoanRequestHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -198,6 +188,8 @@ func ReturnedBookHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("return confirmed successfully"))
 }
 
+// GetLoanByIDForThisUserHandler returns a loan by loanID
+// if the loan belongs to this user
 func GetLoanByIDForThisUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	loanID := vars["id"]
@@ -235,6 +227,8 @@ func GetLoanByIDForThisUserHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// GetAllLoansForThisUserHandler returns all loans
+// that belongs to this user
 func GetAllLoansForThisUserHandler(w http.ResponseWriter, r *http.Request) {
 	userKey := UserPrefix + strings.ToLower(r.Header.Get(auth.UsernameKey))
 
@@ -266,6 +260,8 @@ func GetAllLoansForThisUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(resultString))
 }
 
+// GetAllPendingLoansForThisUserHandler returns all pending loans
+// that belongs to this user
 func GetAllPendingLoansForThisUserHandler(w http.ResponseWriter, r *http.Request) {
 	userKey := UserPrefix + strings.ToLower(r.Header.Get(auth.UsernameKey))
 
@@ -302,6 +298,8 @@ func GetAllPendingLoansForThisUserHandler(w http.ResponseWriter, r *http.Request
 	_, _ = w.Write([]byte(resultString))
 }
 
+// GetAllActiveLoansForThisUserHandler returns all
+//approved loans that belongs to this user
 func GetAllActiveLoansForThisUserHandler(w http.ResponseWriter, r *http.Request) {
 	userKey := UserPrefix + strings.ToLower(r.Header.Get(auth.UsernameKey))
 
@@ -338,6 +336,7 @@ func GetAllActiveLoansForThisUserHandler(w http.ResponseWriter, r *http.Request)
 	_, _ = w.Write([]byte(resultString))
 }
 
+// GetLoanByIDHandler returns a loan by loanID for admin
 func GetLoanByIDHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	loanID := vars["id"]
@@ -361,6 +360,7 @@ func GetLoanByIDHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetAllLoansHandler returns to admin a list of all loans
 func GetAllLoansHandler(w http.ResponseWriter, _ *http.Request) {
 	loanKeys, err := db.ScanKeysByPrefix(LoanPrefix)
 	if err != nil {
@@ -392,6 +392,7 @@ func GetAllLoansHandler(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write([]byte(resultString))
 }
 
+// GetAllPendingLoansHandler returns to admin a list of all pending loans
 func GetAllPendingLoansHandler(w http.ResponseWriter, _ *http.Request) {
 	loanKeys, err := db.ScanKeysByPrefix(LoanPrefix)
 	if err != nil {
@@ -428,6 +429,7 @@ func GetAllPendingLoansHandler(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write([]byte(resultString))
 }
 
+// GetAllActiveLoansHandler returns to admin a list of all active loans
 func GetAllActiveLoansHandler(w http.ResponseWriter, _ *http.Request) {
 	loanKeys, err := db.ScanKeysByPrefix(LoanPrefix)
 	if err != nil {
@@ -536,6 +538,8 @@ func removeLoanIDFromUser(userKey string, loanID int) error {
 	return nil
 }
 
+// A helper method that removes a single element from an array
+// and returns the modified error
 func RemoveElementFromArray(sourceArray []int, element int) []int {
 	for i, value := range sourceArray {
 		if value == element {
