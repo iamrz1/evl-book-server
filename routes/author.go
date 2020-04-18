@@ -18,7 +18,6 @@ func AuthorCreateHandler(w http.ResponseWriter, r *http.Request) {
 	// check for inconsistencies
 	validAuthor, err := validateAuthorCreate(author)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -46,7 +45,6 @@ func AuthorUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// check for inconsistencies
 	validAuthor, err := validateAuthorUpdate(author)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

@@ -3,10 +3,11 @@ package auth
 import (
 	"evl-book-server/config"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type Auth struct{}
@@ -23,7 +24,6 @@ func (*Auth) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handler
 		return []byte(config.App().Key), nil
 	})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -55,7 +55,6 @@ func (*Admin) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handle
 		return []byte(config.App().Key), nil
 	})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

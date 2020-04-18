@@ -20,7 +20,6 @@ func CreateLoanRequestHandler(w http.ResponseWriter, r *http.Request) {
 	// check for inconsistencies
 	validLoan, err := ValidateLoanCreate(loan)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -73,7 +72,6 @@ func ApproveLoanRequestHandler(w http.ResponseWriter, r *http.Request) {
 	loanKey := LoanPrefix + vars["id"]
 	loan := getLoanByKeyFromDB(loanKey)
 	if loan.Approved == true {
-		w.WriteHeader(http.StatusForbidden)
 		http.Error(w, "loan has been approved already", http.StatusForbidden)
 		return
 	}
@@ -173,7 +171,6 @@ func ReturnedBookHandler(w http.ResponseWriter, r *http.Request) {
 	// decrement onloan count in book by one
 	err = updateBookLoanCountByID(loan.BookID, -1)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
@@ -222,7 +219,6 @@ func GetLoanByIDForThisUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusInternalServerError)
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 	return
 }
@@ -354,7 +350,6 @@ func GetLoanByIDHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// if any other error
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -474,7 +469,7 @@ func getLoanDetails(r *http.Request) config.Loan {
 		// If there is something wrong with the request body
 		return config.Loan{}
 	}
-	log.Println("bookID=", bookID)
+
 	loan := config.Loan{}
 	loan.BookID = bookID
 	loanID := 0
@@ -484,9 +479,9 @@ func getLoanDetails(r *http.Request) config.Loan {
 			loanID = n
 		}
 	}
-	log.Println("loanID=", loanID)
+
 	loan.ID = loanID
-	log.Println("username=", r.Header.Get(auth.UsernameKey))
+
 	loan.Username = r.Header.Get(auth.UsernameKey)
 	loan.Approved = false
 

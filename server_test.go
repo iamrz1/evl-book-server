@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -25,11 +26,13 @@ const (
 	authorName = "An Author"
 	loanOne    = 1
 	loanTwo    = 2
+	numberOfIteration = 1000
 )
 
 var (
 	token      = ""
 	adminToken = ""
+	interval = time.Microsecond
 )
 
 func TestUserSignUP(t *testing.T) {
@@ -336,22 +339,43 @@ func TestDeleteAuthor(t *testing.T) {
 	getMultiPleResponse(t, requests, statusOutArr)
 }
 
-func TestDBDeleteUser(t *testing.T) {
-	url := fmt.Sprintf("http://localhost:3000/api/admin/author/delete/%d", bookID)
-	req1, err := http.NewRequest(http.MethodPost, url, nil)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	req1.Header.Set("Authorization", "Bearer "+token)
 
-	req2, err := http.NewRequest(http.MethodPost, url, nil)
-	if err != nil {
-		t.Error(err.Error())
+func TestCreateBookWithStress(t *testing.T) {
+	for i:=1; i<numberOfIteration;i++{
+
+		book := &config.Book{
+			ID:       i,
+			BookName: bookName,
+		}
+		bookBytes, err := json.Marshal(book)
+
+		if err != nil {
+			t.Error(err.Error())
+			return
+		}
+		url := "http://localhost:3000/api/admin/book/create"
+
+		req1, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(bookBytes))
+		if err != nil {
+			t.Error(err.Error())
+		}
+		req1.Header.Set("Authorization", "Bearer "+adminToken)
+		getSingleOKResponse(t,req1)
+		//time.Sleep(interval)
 	}
-	req2.Header.Set("Authorization", "Bearer "+adminToken)
-	requests := []*http.Request{req1, req2}
-	statusOutArr := []int{http.StatusUnauthorized, http.StatusOK}
-	getMultiPleResponse(t, requests, statusOutArr)
+}
+
+func TestDeleteBookWithStress(t *testing.T) {
+	for i:=1; i<numberOfIteration;i++{
+		url := fmt.Sprintf("http://localhost:3000/api/admin/book/delete/%d", i)
+		req1, err := http.NewRequest(http.MethodPost, url, nil)
+		if err != nil {
+			t.Error(err.Error())
+		}
+		req1.Header.Set("Authorization", "Bearer "+adminToken)
+		getSingleOKResponse(t,req1)
+		//time.Sleep(interval)
+	}
 }
 
 func TestRedis(t *testing.T) {

@@ -29,7 +29,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("user doesn't exist"))
 			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -42,7 +41,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//Generate token
 	token, err := auth.GenerateJWT(user)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -55,7 +53,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 func JsonResponse(response interface{}, w http.ResponseWriter) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
