@@ -1,18 +1,22 @@
 # evl-book-server
-A book server with loan, and upload features.
+A RESTful API server to provide a management system for a library.
 
-This repo contains an API server which is built using Golang. It uses Gorilla mux library for HTTP API calls,Cobra CLI for making a CLI of the application and go-jwt for adding jwt authorization token.
-It also uses Negroni to provide authentication middlewares. Library admin and users have different middlewares to maintain a role based access. As the expected size of data is small, and in-memory-storage should provide really fast access, Redis is used as the database.
+This repository contains an API server built using Golang. It uses Gorilla mux library for HTTP API calls,Cobra CLI for to provide the application with a command line interface. It has go-jwt to create and validate jwt authorization tokens.
+The server also uses Negroni to provide authentication middle-wares. Library admin and users have different middle-wares to maintain a role based access. As the expected size of the data is small, and in-memory-storage provides really fast access to data, Redis is used as the database.
 
 The server uses a configuration file (config.toml) to take user configurable inputs, such as server port, redis port, redis password etc. Data from config file is extracted using Viper.
 
-To keep administration part simple, everytime the server starts, a default account for admin is created (username: admin, password: admin) and saved in the database if one is not already available. You can change the password later by using the `/api/update-profile` endpoint.
+To keep administration part simple, every time the server starts, it ensures a default account for Admin (username: admin, password: admin). You can change the password later by using the `/api/update-profile` endpoint.
 
 ### Start the server with default configuration
 
 ```
 ./run.sh
 ```
+Note: be sure to start your database server before starting this API server.
+
+### Test the server
+Whe the server is running on port 3000, you can test the server using the command `go test -v`.
 
 this will build the server and start it using the configuration found in `config.toml`.
 
