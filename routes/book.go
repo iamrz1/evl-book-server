@@ -155,9 +155,12 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 		return config.Book{}, errors.New("book name or ID is missing")
 	}
 	log.Println("book author id=", book.AuthorID)
+	author := config.Author{}
+	authorKey := AuthorPrefix + strconv.Itoa(book.AuthorID)
+	var err error
+	err = nil
 	if book.AuthorID != 0 {
-		authorKey := AuthorPrefix + strconv.Itoa(book.AuthorID)
-		author, err := getAuthorByKeyFromDB(authorKey)
+		author, err = getAuthorByKeyFromDB(authorKey)
 		if err != nil {
 			return config.Book{}, err
 		}
@@ -177,6 +180,14 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 		}
 		book.AddCount = 0
 		book.OnLoanCount = 0
+		 if author.ID != 0 {
+			 authorBytes, err := json.Marshal(author)
+			 if err != nil {
+				 return config.Book{}, err
+			 }
+			 _ = db.SetJsonValues(authorKey,authorBytes)
+		 }
+
 		return book, nil
 	}
 	// book is old

@@ -28,6 +28,7 @@ var (
 func ValidateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := strings.TrimSpace(strings.ToLower(vars[auth.UsernameKey]))
+	userKey := UserPrefix + username
 	//validate user credentials
 	for _, word := range ReservedWords {
 		if username == word {
@@ -45,7 +46,7 @@ func ValidateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := db.GetSingleValue(username)
+	_, err := db.GetSingleValue(userKey)
 	if err != nil {
 		if err.Error() == db.RedisNilErr {
 			w.Header().Set(ValidUserName, TrueString)

@@ -541,9 +541,12 @@ func removeLoanIDFromUser(userKey string, loanID int) error {
 // A helper method that removes a single element from an array
 // and returns the modified error
 func RemoveElementFromArray(sourceArray []int, element int) []int {
+
 	for i, value := range sourceArray {
 		if value == element {
-			sourceArray = append(sourceArray[:i], sourceArray[i+1:]...)
+			//sourceArray = append(sourceArray[:i], sourceArray[i+1:]...)
+			sourceArray[i] = sourceArray[len(sourceArray)-1]
+			return sourceArray[:len(sourceArray)-1]
 		}
 	}
 	return sourceArray
