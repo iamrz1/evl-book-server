@@ -190,7 +190,7 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 	if book.BookName == "" || book.ID == 0 {
 		return config.Book{}, errors.New("book name or ID is missing")
 	}
-	log.Println("book author id=", book.AuthorID)
+
 	author := config.Author{}
 	authorKey := AuthorPrefix + strconv.Itoa(book.AuthorID)
 	var err error
@@ -248,7 +248,7 @@ func ValidateBookUpdate(book config.Book) (config.Book, error) {
 	if book.BookName == "" || book.ID == 0 {
 		return config.Book{}, errors.New("book name or ID is missing")
 	}
-	log.Println("book author id=", book.AuthorID)
+
 	bookKey := BookPrefix + strconv.Itoa(book.ID)
 	ok, err := isBookExistInDB(bookKey)
 	if err != nil {
