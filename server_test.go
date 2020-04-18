@@ -25,7 +25,7 @@ const (
 	authorName        = "An Author"
 	loanOne           = 1
 	loanTwo           = 2
-	numberOfIteration = 10000
+	numberOfIteration = 1000
 )
 
 var (
