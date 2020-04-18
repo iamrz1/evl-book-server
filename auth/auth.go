@@ -17,7 +17,7 @@ func (*Auth) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handler
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Need Bearer authorization! Generate token using your username and password here: http://localhost:<port>/api/login\n"))
+		_, _ = w.Write([]byte("Need Bearer authorization! Generate token using your username and password here: http://localhost:<port>/api/login\n"))
 		return
 	}
 	token, err := jwt.Parse(strings.Split(authHeader, " ")[1], func(token *jwt.Token) (interface{}, error) {
@@ -30,7 +30,7 @@ func (*Auth) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handler
 
 	if !token.Valid {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("token not valid"))
+		_, _ = w.Write([]byte("token not valid"))
 		return
 	}
 	claimMap := token.Claims.(jwt.MapClaims)
@@ -48,7 +48,7 @@ func (*Admin) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handle
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Need Bearer authorization! Generate token using your username and password here: http://localhost:<port>/api/login\n"))
+		_, _ = w.Write([]byte("Need Bearer authorization! Generate token using your username and password here: http://localhost:<port>/api/login\n"))
 		return
 	}
 	token, err := jwt.Parse(strings.Split(authHeader, " ")[1], func(token *jwt.Token) (interface{}, error) {
@@ -61,14 +61,14 @@ func (*Admin) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handle
 
 	if !token.Valid {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("token not valid"))
+		_, _ = w.Write([]byte("token not valid"))
 		return
 	}
 	claimMap := token.Claims.(jwt.MapClaims)
 
 	if claimMap[AdminKey] == false {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("token not valid for administrative work"))
+		_, _ = w.Write([]byte("token not valid for administrative work"))
 		return
 	}
 	for key, value := range claimMap {

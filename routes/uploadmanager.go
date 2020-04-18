@@ -24,16 +24,16 @@ func UploadPostedImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := UploadMultipartFile(r, client, URL, FileID, filePath)
 	if err != nil {
-		fmt.Fprint(w, err.Error())
+		_, _ = fmt.Fprint(w, err.Error())
 		return
 	}
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Fprint(w, err.Error())
+		_, _ = fmt.Fprint(w, err.Error())
 		return
 	}
 
-	w.Write(bodyText)
+	_, _ = w.Write(bodyText)
 }
 func UploadMultipartFile(r *http.Request, client *http.Client, uri, key, path string) (*http.Response, error) {
 	body, writer := io.Pipe()

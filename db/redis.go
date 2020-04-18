@@ -49,9 +49,6 @@ func IsRedisUp() bool {
 func SetJsonValues(key string, json []byte) error {
 	return redisClient.Set(key, json, 0).Err()
 }
-func SetSingleValue(key string, value string) error {
-	return redisClient.Set(key, value, 0).Err()
-}
 
 // GetByteValues set json values against uid in redis instance
 func GetByteValues(key string) ([]byte, error) {

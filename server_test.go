@@ -13,26 +13,25 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 const (
-	username   = "test"
-	password   = "test"
-	admin      = "admin"
-	bookID     = 1
-	bookName   = "A Book"
-	authorID   = 1
-	authorName = "An Author"
-	loanOne    = 1
-	loanTwo    = 2
+	username          = "test"
+	password          = "test"
+	admin             = "admin"
+	bookID            = 1
+	bookName          = "A Book"
+	authorID          = 1
+	authorName        = "An Author"
+	loanOne           = 1
+	loanTwo           = 2
 	numberOfIteration = 10000
 )
 
 var (
 	token      = ""
 	adminToken = ""
-	interval = time.Millisecond
+	//interval   = time.Millisecond
 )
 
 func TestUserSignUP(t *testing.T) {
@@ -44,10 +43,11 @@ func TestUserSignUP(t *testing.T) {
 		LoanIDArray: nil,
 	}
 	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(user)
+	_ = json.NewEncoder(buf).Encode(user)
 	req, err := http.NewRequest(http.MethodPost, "http://localhost:3000/api/signup", buf)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	getSingleOKResponse(t, req)
 }
@@ -56,6 +56,7 @@ func TestAdminLogin(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, "http://localhost:3000/api/login", nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req.Header.Set("Authorization", "Base "+base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", admin, admin))))
 	adminToken = getSingleOKResponse(t, req)
@@ -65,6 +66,7 @@ func TestUserLogin(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, "http://localhost:3000/api/login", nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req.Header.Set("Authorization", "Base "+base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", username, password))))
 	token = getSingleOKResponse(t, req)
@@ -86,12 +88,14 @@ func TestCreateAuthor(t *testing.T) {
 	req1, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(authorBytes))
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req1.Header.Set("Authorization", "Bearer "+adminToken)
 
 	req2, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(authorBytes))
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req2.Header.Set("Authorization", "Bearer "+token)
 	requests := []*http.Request{req1, req2}
@@ -104,6 +108,7 @@ func TestGetAuthor(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%d", url, authorID), nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req.Header.Set("Authorization", "Bearer "+adminToken)
@@ -116,6 +121,7 @@ func TestGetAllAuthors(t *testing.T) {
 	req1, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req1.Header.Set("Authorization", "Bearer "+adminToken)
@@ -150,18 +156,21 @@ func TestCreateBook(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 		return
+
 	}
 	url := "http://localhost:3000/api/admin/book/create"
 
 	req1, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(bookBytes))
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req1.Header.Set("Authorization", "Bearer "+adminToken)
 
 	req2, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(bookBytes))
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req2.Header.Set("Authorization", "Bearer "+token)
 	requests := []*http.Request{req1, req2}
@@ -175,12 +184,14 @@ func TestCreateLoan(t *testing.T) {
 	req1, err := http.NewRequest(http.MethodPost, url+strconv.Itoa(loanOne), nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req1.Header.Set("Authorization", "Bearer "+token)
 
 	req2, err := http.NewRequest(http.MethodPost, url+strconv.Itoa(loanTwo), nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req2.Header.Set("Authorization", "Bearer "+token)
 
@@ -196,6 +207,7 @@ func TestGetAllAndUserSpecificPendingLoans(t *testing.T) {
 	req1, err := http.NewRequest(http.MethodGet, allUrl, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req1.Header.Set("Authorization", "Bearer "+adminToken)
@@ -233,6 +245,7 @@ func TestAcceptLoan(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req.Header.Set("Authorization", "Bearer "+adminToken)
@@ -245,6 +258,7 @@ func TestRejectLoan(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req.Header.Set("Authorization", "Bearer "+adminToken)
@@ -257,6 +271,7 @@ func TestReturnedLoan(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req.Header.Set("Authorization", "Bearer "+adminToken)
@@ -269,6 +284,7 @@ func TestGetBook(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%d", url, bookID), nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req.Header.Set("Authorization", "Bearer "+adminToken)
@@ -280,6 +296,7 @@ func TestGetAllBooks(t *testing.T) {
 	req1, err := http.NewRequest(http.MethodGet, "http://localhost:3000/api/books", nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 
 	req1.Header.Set("Authorization", "Bearer "+adminToken)
@@ -296,6 +313,7 @@ func TestGetAllBooks(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 		return
+
 	}
 	req3.Header.Set("Authorization", "Bearer "+token)
 	requests := []*http.Request{req1, req2, req3}
@@ -308,12 +326,14 @@ func TestDeleteBook(t *testing.T) {
 	req1, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req1.Header.Set("Authorization", "Bearer "+token)
 
 	req2, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req2.Header.Set("Authorization", "Bearer "+adminToken)
 	requests := []*http.Request{req1, req2}
@@ -322,7 +342,7 @@ func TestDeleteBook(t *testing.T) {
 }
 
 func TestCreateBookWithStress(t *testing.T) {
-	for i:=1; i<numberOfIteration;i++{
+	for i := 1; i < numberOfIteration; i++ {
 
 		book := &config.Book{
 			ID:       i,
@@ -340,22 +360,24 @@ func TestCreateBookWithStress(t *testing.T) {
 		req1, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(bookBytes))
 		if err != nil {
 			t.Error(err.Error())
+			return
 		}
 		req1.Header.Set("Authorization", "Bearer "+adminToken)
-		getSingleOKResponse(t,req1)
+		getSingleOKResponse(t, req1)
 		//time.Sleep(interval)
 	}
 }
 
 func TestDeleteBookWithStress(t *testing.T) {
-	for i:=1; i<numberOfIteration;i++{
+	for i := 1; i < numberOfIteration; i++ {
 		url := fmt.Sprintf("http://localhost:3000/api/admin/book/delete/%d", i)
 		req1, err := http.NewRequest(http.MethodPost, url, nil)
 		if err != nil {
 			t.Error(err.Error())
+			return
 		}
 		req1.Header.Set("Authorization", "Bearer "+adminToken)
-		getSingleOKResponse(t,req1)
+		getSingleOKResponse(t, req1)
 		//time.Sleep(interval)
 	}
 }
@@ -365,12 +387,14 @@ func TestDeleteAuthor(t *testing.T) {
 	req1, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req1.Header.Set("Authorization", "Bearer "+token)
 
 	req2, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
 	req2.Header.Set("Authorization", "Bearer "+adminToken)
 	requests := []*http.Request{req1, req2}
@@ -398,6 +422,7 @@ func getSingleOKResponse(t *testing.T, req *http.Request) string {
 	res, err := client.Do(req)
 	if err != nil {
 		log.Println("err:", err.Error())
+		return ""
 	}
 
 	//Check the status code is what we expect.
@@ -405,10 +430,10 @@ func getSingleOKResponse(t *testing.T, req *http.Request) string {
 		t.Error("Handler returned wrong status code: got ", res.StatusCode, "want ", http.StatusOK)
 	}
 
-	bytes := make([]byte, res.ContentLength)
-	res.Body.Read(bytes)
+	bodyBytes := make([]byte, res.ContentLength)
+	_, _ = res.Body.Read(bodyBytes)
 
-	return strings.ReplaceAll(string(bytes), "\"", "")
+	return strings.ReplaceAll(string(bodyBytes), "\"", "")
 }
 
 func getMultiPleResponse(t *testing.T, requests []*http.Request, statusOutArr []int) {
@@ -419,6 +444,7 @@ func getMultiPleResponse(t *testing.T, requests []*http.Request, statusOutArr []
 		res, err := client.Do(req)
 		if err != nil {
 			log.Println("err:", err.Error())
+			return
 		}
 
 		//Check the status code is what we expect.
