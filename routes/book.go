@@ -57,7 +57,6 @@ func BookUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// check for inconsistencies
 	validBook, err := ValidateBookUpdate(book)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -83,7 +82,44 @@ func BookDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	bookKey := BookPrefix + bookID
 
-	err := db.RemoveByKey(bookKey)
+	bookBytes, err := db.GetByteValues(bookKey)
+	if err != nil {
+		if err.Error() == db.RedisNilErr {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var book config.Book
+	err = json.Unmarshal(bookBytes, &book)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if book.AuthorID != 0 {
+		//delete from authors collection
+		bookIDInt, err := strconv.Atoi(bookID)
+		if err != nil {
+			http.Error(w, "book id has to be an integer", http.StatusBadRequest)
+			return
+		}
+		authorKey := AuthorPrefix + strconv.Itoa(book.AuthorID)
+		author, err := getAuthorByKeyFromDB(authorKey)
+		if err != nil && err.Error() != db.RedisNilErr {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err == nil {
+			author.AuthoredBookIDs = RemoveElementFromArray(author.AuthoredBookIDs, bookIDInt)
+			authorBytes, _ := json.Marshal(author)
+			_ = db.SetJsonValues(authorKey, authorBytes)
+		}
+	}
+
+	err = db.RemoveByKey(bookKey)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -180,13 +216,13 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 		}
 		book.AddCount = 0
 		book.OnLoanCount = 0
-		 if author.ID != 0 {
-			 authorBytes, err := json.Marshal(author)
-			 if err != nil {
-				 return config.Book{}, err
-			 }
-			 _ = db.SetJsonValues(authorKey,authorBytes)
-		 }
+		if author.ID != 0 {
+			authorBytes, err := json.Marshal(author)
+			if err != nil {
+				return config.Book{}, err
+			}
+			_ = db.SetJsonValues(authorKey, authorBytes)
+		}
 
 		return book, nil
 	}
