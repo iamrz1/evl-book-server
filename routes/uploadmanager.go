@@ -15,7 +15,9 @@ const (
 	FilePathKey = "filepath"
 )
 
-func ImageUploadHandOffHandler(w http.ResponseWriter, r *http.Request) {
+// UploadPostedImageHandler saves an image to a directory inside the server
+// received from the POST request of a multi-part-file
+func UploadPostedImageHandler(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{}
 	filePath := r.Header.Get(FilePathKey)
 	URL := fmt.Sprintf("%s://%s%s/finalize", config.App().Scheme, r.Host, r.URL)
@@ -31,7 +33,6 @@ func ImageUploadHandOffHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//w.WriteHeader(http.StatusOK)
 	w.Write(bodyText)
 }
 func UploadMultipartFile(r *http.Request, client *http.Client, uri, key, path string) (*http.Response, error) {

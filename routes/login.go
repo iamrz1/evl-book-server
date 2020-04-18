@@ -60,7 +60,6 @@ func JsonResponse(response interface{}, w http.ResponseWriter) {
 		return
 	}
 
-	//w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/jsonResponse")
 	_, _ = w.Write(jsonResponse)
 }

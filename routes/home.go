@@ -11,5 +11,4 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(fmt.Sprintf("User : %s \n", r.Header.Get(auth.UsernameKey))))
 	_, _ = w.Write([]byte(fmt.Sprintf("Admin : %s \n", r.Header.Get(auth.AdminKey))))
 
-	//w.WriteHeader(http.StatusOK)
 }

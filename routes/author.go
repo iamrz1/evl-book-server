@@ -10,12 +10,13 @@ import (
 	"strconv"
 )
 
+// AuthorCreateHandler creates a new author using the given JSON
 func AuthorCreateHandler(w http.ResponseWriter, r *http.Request) {
 	// assuming that we will receive json as signup form
 	author := getAuthorDetails(r)
 
 	// check for inconsistencies
-	validAuthor, err := ValidateAuthorCreate(author)
+	validAuthor, err := validateAuthorCreate(author)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -37,12 +38,13 @@ func AuthorCreateHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("author added successfully"))
 }
 
+// AuthorUpdateHandler updates author info using the given JSON
 func AuthorUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	// assuming that we will receive json as signup form
+	// assuming that we will receive json
 	author := getAuthorDetails(r)
 
 	// check for inconsistencies
-	validAuthor, err := ValidateAuthorUpdate(author)
+	validAuthor, err := validateAuthorUpdate(author)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -63,6 +65,7 @@ func AuthorUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("author added successfully"))
 }
 
+// AuthorDeleteHandler deletes an author by ID
 func AuthorDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	authorID := vars["id"]
@@ -78,6 +81,7 @@ func AuthorDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("author deleted successfully"))
 }
 
+// GetAuthorHandler returns an author's info by authorID
 func GetAuthorHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	authorID := vars["id"]
@@ -97,6 +101,7 @@ func GetAuthorHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(author)
 }
 
+// GetAllAuthorsHandler returns an array of all authors' info
 func GetAllAuthorsHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/jsonResponse")
 	authorKeys, err := db.ScanKeysByPrefix(AuthorPrefix)
@@ -134,7 +139,7 @@ func getAuthorDetails(r *http.Request) config.Author {
 	return author
 }
 
-func ValidateAuthorCreate(author config.Author) (config.Author, error) {
+func validateAuthorCreate(author config.Author) (config.Author, error) {
 	if author.AuthorName == "" || author.ID == 0 {
 		return config.Author{}, errors.New("author name or ID is missing")
 	}
@@ -164,7 +169,7 @@ func isAuthorExistInDB(key string) (bool, error) {
 	return true, nil
 }
 
-func ValidateAuthorUpdate(author config.Author) (config.Author, error) {
+func validateAuthorUpdate(author config.Author) (config.Author, error) {
 	if author.AuthorName == "" || author.ID == 0 {
 		return config.Author{}, errors.New("author name or ID is missing")
 	}

@@ -18,6 +18,7 @@ const (
 	LoanPrefix   = "loan_"
 )
 
+// BookCreateHandler creates a new book using the given JSON
 func BookCreateHandler(w http.ResponseWriter, r *http.Request) {
 	// assuming that we will receive json as signup form
 	book := getBookDetails(r)
@@ -48,6 +49,7 @@ func BookCreateHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("book added successfully"))
 }
 
+// BookUpdateHandler updates a book's info using the given JSON
 func BookUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// assuming that we will receive json as signup form
 	book := getBookDetails(r)
@@ -74,6 +76,7 @@ func BookUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("book added successfully"))
 }
 
+// BookDeleteHandler deletes a book by the given ID
 func BookDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bookID := vars["id"]
@@ -89,6 +92,7 @@ func BookDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("book deleted successfully"))
 }
 
+// GetBookHandler returns a book's info by bookID
 func GetBookHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bookID := vars["id"]
@@ -108,6 +112,7 @@ func GetBookHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(book)
 }
 
+// GetAllBooksHandler returns an array of all books' info
 func GetAllBooksHandler(w http.ResponseWriter, _ *http.Request) {
 
 	bookKeys, err := db.ScanKeysByPrefix(BookPrefix)
@@ -150,9 +155,12 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 		return config.Book{}, errors.New("book name or ID is missing")
 	}
 	log.Println("book author id=", book.AuthorID)
+	author := config.Author{}
+	authorKey := AuthorPrefix + strconv.Itoa(book.AuthorID)
+	var err error
+	err = nil
 	if book.AuthorID != 0 {
-		authorKey := AuthorPrefix + strconv.Itoa(book.AuthorID)
-		author, err := getAuthorByKeyFromDB(authorKey)
+		author, err = getAuthorByKeyFromDB(authorKey)
 		if err != nil {
 			return config.Book{}, err
 		}
@@ -172,6 +180,14 @@ func ValidateBookCreate(book config.Book) (config.Book, error) {
 		}
 		book.AddCount = 0
 		book.OnLoanCount = 0
+		 if author.ID != 0 {
+			 authorBytes, err := json.Marshal(author)
+			 if err != nil {
+				 return config.Book{}, err
+			 }
+			 _ = db.SetJsonValues(authorKey,authorBytes)
+		 }
+
 		return book, nil
 	}
 	// book is old

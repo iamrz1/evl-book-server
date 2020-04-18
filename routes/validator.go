@@ -22,9 +22,13 @@ var (
 	ReservedWords = []string{"http", "https", "www", "ftp", "admin", ".com", ".io", ".net", "login", "book_", "author_", "loan_", "user_"}
 )
 
+// ValidateUser endpoint is used to validate any potential username
+//that users want to obtain for themselves using a predefined
+//set of rules and existing usernames in database
 func ValidateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := strings.TrimSpace(strings.ToLower(vars[auth.UsernameKey]))
+	userKey := UserPrefix + username
 	//validate user credentials
 	for _, word := range ReservedWords {
 		if username == word {
@@ -42,7 +46,7 @@ func ValidateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := db.GetSingleValue(username)
+	_, err := db.GetSingleValue(userKey)
 	if err != nil {
 		if err.Error() == db.RedisNilErr {
 			w.Header().Set(ValidUserName, TrueString)

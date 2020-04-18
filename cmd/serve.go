@@ -73,8 +73,7 @@ func serve(_ *cobra.Command, _ []string) {
 	api.Handle("/book/{id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetBookHandler))))
 	api.Handle("/authors", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAllAuthorsHandler))))
 	api.Handle("/author/{id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.GetAuthorHandler))))
-	api.HandleFunc("/test", routes.ImageUploadHandOffHandler)
-	api.Handle("/upload", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.ImageUploadHandOffHandler))))
+	api.Handle("/upload", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.UploadPostedImageHandler))))
 	api.Handle("/upload/finalize", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.ImageUploadHandler))))
 
 	api.Handle("/loan/request/{book_id}", userAuthMW.With(negroni.Wrap(http.HandlerFunc(routes.CreateLoanRequestHandler))))
